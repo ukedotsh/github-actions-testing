@@ -19,7 +19,8 @@ jobs:
           script: |
 
             cd /var/www/wordpress/wp-content/plugins/
-            git clone git@github.com:ukedotsh/your-plugin-repo.git my-plugin
+            rm -rf my-plugin
+            git clone git@github.com:ukedotsh/github-actions-testing.git my-plugin
             git reset --hard HEAD
             git clean -fd
             git pull origin main
