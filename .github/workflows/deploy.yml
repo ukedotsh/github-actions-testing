@@ -3,7 +3,7 @@ name: Deploy Plugin to Test Server
 on:
   push:
     branches:
-      - feature/performance-testing # or any branch you use for staging/testing
+      - main # or any branch you use for staging/testing
 
 jobs:
   deploy:
