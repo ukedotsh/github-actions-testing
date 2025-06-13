@@ -17,7 +17,11 @@ jobs:
           username: ${{ secrets.TEST_SERVER_USER }}
           key: ${{ secrets.TEST_SERVER_SSH_KEY }}
           script: |
-            cd /var/www/wordpress/wp-content/plugins/my-plugin
+
+            cd /var/www/wordpress/wp-content/plugins/
+            git clone git@github.com:ukedotsh/your-plugin-repo.git my-plugin
+            git reset --hard HEAD
+            git clean -fd
             git pull origin main
             wp plugin deactivate my-plugin --allow-root || true
             wp plugin activate my-plugin --allow-root
