@@ -3,38 +3,24 @@ name: Deploy Plugin to Test Server
 on:
   push:
     branches:
-      - main # or your dev/test branch
+      - main # Or your deployment branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout plugin code
         uses: actions/checkout@v3
 
-      - name: Deploy plugin using rsync over SSH
+      - name: Deploy plugin to test server using rsync over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.TEST_SERVER_HOST }}
           username: ${{ secrets.TEST_SERVER_USER }}
           key: ${{ secrets.TEST_SERVER_SSH_KEY }}
           script: |
-            rsync -avz --delete ~/plugin-source/ /var/www/html/wp-content/plugins/my-plugin
-          envs: GITHUB_WORKSPACE
-          # upload the files to a temp dir first
-      - name: Upload plugin files to server
-        run: |
-          rsync -avz --delete ./ ${{ secrets.TEST_SERVER_USER }}@${{ secrets.TEST_SERVER_HOST }}:~/plugin-source
-
-      - name: Reactivate plugin and flush cache via WP-CLI
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.TEST_SERVER_HOST }}
-          username: ${{ secrets.TEST_SERVER_USER }}
-          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
-          script: |
-            cd /var/www/html
-            wp plugin deactivate my-plugin --allow-root
+            rsync -avz --delete $GITHUB_WORKSPACE/ /var/www/wordpress/wp-content/plugins/my-plugin
+            wp plugin deactivate my-plugin --allow-root || true
             wp plugin activate my-plugin --allow-root
             wp cache flush --allow-root
