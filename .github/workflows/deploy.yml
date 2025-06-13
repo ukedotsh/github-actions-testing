@@ -1,0 +1,36 @@
+name: Deploy Plugin to Test Server
+
+on:
+  push:
+    branches:
+      - feature/performance-testing # or any branch you use for staging/testing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Deploy via Rsync
+        uses: burnett01/rsync-deployments@v1.0.2
+        with:
+          switches: -avz --delete
+          path: ./
+          remote_path: /var/www/wordpress/wp-content/plugins/my-plugin
+          remote_host: ${{ secrets.TEST_SERVER_HOST }}
+          remote_user: ${{ secrets.TEST_SERVER_USER }}
+          remote_key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+
+      - name: Flush Cache and Reactivate Plugin
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.TEST_SERVER_HOST }}
+          username: ${{ secrets.TEST_SERVER_USER }}
+          key: ${{ secrets.TEST_SERVER_SSH_KEY }}
+          script: |
+            cd /var/www/wordpress
+            wp plugin deactivate my-plugin --allow-root
+            wp plugin activate my-plugin --allow-root
+            wp cache flush --allow-root
