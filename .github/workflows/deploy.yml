@@ -1,26 +1,26 @@
-name: Deploy Plugin to Test Server
+name: Deploy via Git Pull
 
 on:
   push:
     branches:
-      - main # Or your deployment branch
+      - main # Or any deployment branch
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout plugin code
-        uses: actions/checkout@v3
-
-      - name: Deploy plugin to test server using rsync over SSH
+      - name: Deploy using git pull on the server
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.TEST_SERVER_HOST }}
           username: ${{ secrets.TEST_SERVER_USER }}
           key: ${{ secrets.TEST_SERVER_SSH_KEY }}
           script: |
-            rsync -avz --delete $GITHUB_WORKSPACE/ /var/www/wordpress/wp-content/plugins/my-plugin
+            cd /var/www/wordpress/wp-content/plugins/my-plugin
+            git reset --hard HEAD
+            git clean -fd
+            git pull origin main
             wp plugin deactivate my-plugin --allow-root || true
             wp plugin activate my-plugin --allow-root
             wp cache flush --allow-root
